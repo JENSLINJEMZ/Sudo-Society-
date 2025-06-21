@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sudo Society CTF</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --neon-green: #00ff88;
+      --neon-pink: #ff00c8;
+      --neon-blue: #00ffff;
+      --dark-bg: #0a0a0a;
+      --darker-bg: #050505;
+      --card-bg: rgba(20, 20, 20, 0.7);
+      --glow: 0 0 15px rgba(0, 255, 136, 0.7);
+      --glow-intense: 0 0 25px rgba(0, 255, 136, 0.9);
+    }
+
+    /* === BASE STYLES === */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Share Tech Mono', monospace;
+      background-color: var(--dark-bg);
+      color: #c0fccc;
+      overflow-x: hidden;
+      background-image: 
+        radial-gradient(circle at 20% 30%, rgba(0, 255, 136, 0.05) 0%, transparent 25%),
+        radial-gradient(circle at 80% 70%, rgba(0, 200, 255, 0.05) 0%, transparent 25%);
+    }
+
+    /* === SCANLINE EFFECT === */
+    .scanline {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(to bottom, transparent, var(--neon-green), transparent);
+      animation: scan 4s linear infinite;
+      z-index: 1000;
+      pointer-events: none;
+      opacity: 0.3;
+    }
+
+    @keyframes scan {
+      0% { top: -2px; }
+      100% { top: 100%; }
+    }
+
+    /* === PULSING BACKGROUND CIRCLE === */
+    .bg-pulse {
+      position: fixed;
+      width: 100vw;
+      height: 100vh;
+      top: 0;
+      left: 0;
+      z-index: -1;
+      opacity: 0.03;
+      background: radial-gradient(circle at center, var(--neon-green) 0%, transparent 70%);
+      animation: pulse 8s infinite alternate;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(0.8); opacity: 0.03; }
+      100% { transform: scale(1.2); opacity: 0.08; }
+    }
+
+    /* === HEADER === */
+    header {
+      padding: 1.5rem 0;
+      border-bottom: 1px solid rgba(0, 255, 136, 0.2);
+      background: rgba(10, 10, 10, 0.95);
+      backdrop-filter: blur(10px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 2rem;
+    }
+
+    .header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+    }
+
+    .logo:hover {
+      transform: scale(1.05);
+    }
+
+    .logo-img {
+      height: 50px;
+      filter: drop-shadow(0 0 8px var(--neon-green));
+      transition: all 0.3s ease;
+    }
+
+    .logo:hover .logo-img {
+      filter: drop-shadow(0 0 12px var(--neon-green));
+    }
+
+    .logo-text {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 900;
+      font-size: 1.8rem;
+      color: var(--neon-green);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      text-shadow: var(--glow);
+      transition: all 0.3s ease;
+    }
+
+    .logo:hover .logo-text {
+      text-shadow: var(--glow-intense);
+    }
+
+    nav {
+      display: flex;
+      gap: 2rem;
+    }
+
+    nav a {
+      color: #c0fccc;
+      text-decoration: none;
+      font-size: 1.1rem;
+      position: relative;
+      padding: 0.5rem 0;
+      transition: all 0.3s ease;
+    }
+
+    nav a::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: var(--neon-green);
+      transition: width 0.3s ease;
+    }
+
+    nav a:hover {
+      color: var(--neon-green);
+    }
+
+    nav a:hover::after {
+      width: 100%;
+    }
+
+    /* === MAIN HERO === */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      padding: 4rem 0;
+      position: relative;
+    }
+
+    .hero-content {
+      text-align: center;
+      width: 100%;
+      position: relative;
+      z-index: 10;
+    }
+
+    /* === GLITCH EFFECT === */
+    .glitch-container {
+      position: relative;
+      margin-bottom: 3rem;
+    }
+
+    .glitch-main {
+      position: relative;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 5rem;
+      font-weight: 900;
+      color: var(--neon-green);
+      text-transform: uppercase;
+      letter-spacing: 5px;
+      text-shadow: var(--glow);
+      animation: glitch-flicker 5s infinite;
+    }
+
+    .glitch-layer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .glitch-red {
+      color: var(--neon-pink);
+      animation: glitch-red 3s infinite linear alternate-reverse;
+      clip-path: polygon(0 0, 100% 0, 100% 30%, 0 30%);
+      text-shadow: 5px 0 var(--neon-pink);
+      z-index: -1;
+    }
+
+    .glitch-blue {
+      color: var(--neon-cyan);
+      animation: glitch-blue 2.5s infinite linear alternate-reverse;
+      clip-path: polygon(0 70%, 100% 70%, 100% 100%, 0 100%);
+      text-shadow: -5px 0 var(--neon-cyan);
+      z-index: -2;
+    }
+
+    @keyframes glitch-red {
+      0% { transform: translate(0); }
+      20% { transform: translate(-5px, 3px); }
+      40% { transform: translate(-3px, -4px); }
+      60% { transform: translate(5px, 2px); }
+      80% { transform: translate(3px, -3px); }
+      100% { transform: translate(0); }
+    }
+
+    @keyframes glitch-blue {
+      0% { transform: translate(0); }
+      20% { transform: translate(3px, -3px); }
+      40% { transform: translate(-2px, 2px); }
+      60% { transform: translate(2px, -2px); }
+      80% { transform: translate(-4px, 3px); }
+      100% { transform: translate(0); }
+    }
+
+    @keyframes glitch-flicker {
+      0%, 5%, 7%, 19%, 21%, 55%, 57%, 100% { text-shadow: var(--glow); }
+      6%, 20%, 56% { 
+        text-shadow: 
+          0 0 20px var(--neon-green),
+          0 0 40px rgba(0, 255, 136, 0.6); 
+      }
+    }
+
+    .hero-subtitle {
+      font-size: 1.5rem;
+      color: rgba(192, 252, 204, 0.9);
+      max-width: 700px;
+      margin: 0 auto 3rem;
+      position: relative;
+      line-height: 1.6;
+    }
+
+    .hero-subtitle::after {
+      content: '_';
+      animation: blink 1s step-end infinite;
+      color: var(--neon-green);
+    }
+
+    @keyframes blink {
+      from, to { opacity: 0; }
+      50% { opacity: 1; }
+    }
+
+    /* === BUTTON === */
+    .cta-button {
+      display: inline-block;
+      padding: 1rem 2.5rem;
+      background: linear-gradient(45deg, var(--neon-green), var(--neon-blue));
+      color: #000;
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      font-size: 1.2rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      border: none;
+      border-radius: 4px;
+      box-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cta-button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 0 30px rgba(0, 255, 136, 0.8);
+      animation: button-pulse 0.5s ease;
+    }
+
+    @keyframes button-pulse {
+      0% { transform: translateY(-3px) scale(1); }
+      50% { transform: translateY(-3px) scale(1.05); }
+      100% { transform: translateY(-3px) scale(1); }
+    }
+
+    .cta-button::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: all 0.5s ease;
+    }
+
+    .cta-button:hover::before {
+      left: 100%;
+    }
+
+    /* === CHALLENGES SECTION === */
+    .section-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 2.5rem;
+      color: var(--neon-green);
+      text-align: center;
+      margin-bottom: 3rem;
+      text-shadow: var(--glow);
+      position: relative;
+      display: inline-block;
+    }
+
+    .section-title::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--neon-green), transparent);
+    }
+
+    .challenges {
+      padding: 5rem 0;
+      background: rgba(5, 5, 5, 0.7);
+      position: relative;
+    }
+
+    .challenges::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--neon-green), transparent);
+      box-shadow: 0 0 10px var(--neon-green);
+    }
+
+    .challenges-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+    }
+
+    .challenge-card {
+      background: var(--card-bg);
+      border: 1px solid rgba(0, 255, 136, 0.2);
+      border-radius: 8px;
+      padding: 2rem;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(5px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .challenge-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(0, 255, 136, 0.1), transparent);
+      transition: all 0.6s ease;
+    }
+
+    .challenge-card:hover::before {
+      left: 100%;
+    }
+
+    .challenge-card:hover {
+      transform: translateY(-5px);
+      border-color: var(--neon-green);
+      box-shadow: 0 10px 20px rgba(0, 255, 136, 0.2);
+    }
+
+    .challenge-icon {
+      font-size: 2.5rem;
+      color: var(--neon-green);
+      margin-bottom: 1rem;
+      text-shadow: var(--glow);
+    }
+
+    .challenge-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.5rem;
+      color: var(--neon-green);
+      margin-bottom: 1rem;
+      text-shadow: var(--glow);
+    }
+
+    .challenge-desc {
+      color: rgba(192, 252, 204, 0.8);
+      margin-bottom: 1.5rem;
+      line-height: 1.6;
+    }
+
+    .challenge-stats {
+      display: flex;
+      justify-content: space-between;
+      color: var(--neon-green);
+      font-size: 0.9rem;
+    }
+
+    /* === LEADERBOARD === */
+    .leaderboard {
+      padding: 5rem 0;
+      position: relative;
+    }
+
+    .leaderboard::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--neon-green), transparent);
+      box-shadow: 0 0 10px var(--neon-green);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 2rem;
+      background: var(--card-bg);
+      backdrop-filter: blur(5px);
+      border: 1px solid rgba(0, 255, 136, 0.2);
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+    }
+
+    th, td {
+      padding: 1rem;
+      text-align: left;
+      border-bottom: 1px solid rgba(0, 255, 136, 0.1);
+    }
+
+    th {
+      font-family: 'Orbitron', sans-serif;
+      color: var(--neon-green);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      background: rgba(0, 255, 136, 0.05);
+    }
+
+    tr:hover {
+      background: rgba(0, 255, 136, 0.03);
+    }
+
+    .rank {
+      font-weight: bold;
+      color: var(--neon-green);
+      font-family: 'Orbitron', sans-serif;
+    }
+
+    /* === COUNTDOWN TIMER === */
+    .countdown {
+      background: rgba(0, 0, 0, 0.7);
+      border: 1px solid rgba(0, 255, 136, 0.3);
+      border-radius: 8px;
+      padding: 2rem;
+      margin: 3rem auto;
+      max-width: 600px;
+      text-align: center;
+      backdrop-filter: blur(5px);
+    }
+
+    .countdown-title {
+      font-family: 'Orbitron', sans-serif;
+      color: var(--neon-green);
+      margin-bottom: 1rem;
+      text-shadow: var(--glow);
+    }
+
+    .countdown-timer {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+    }
+
+    .countdown-item {
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(0, 255, 136, 0.2);
+      border-radius: 4px;
+      padding: 1rem;
+      min-width: 80px;
+    }
+
+    .countdown-number {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 2rem;
+      color: var(--neon-green);
+      text-shadow: var(--glow);
+    }
+
+    .countdown-label {
+      font-size: 0.8rem;
+      color: rgba(192, 252, 204, 0.7);
+      text-transform: uppercase;
+      margin-top: 0.5rem;
+    }
+
+    /* === FOOTER === */
+    footer {
+      padding: 3rem 0;
+      background: rgba(5, 5, 5, 0.95);
+      border-top: 1px solid rgba(0, 255, 136, 0.2);
+      text-align: center;
+      position: relative;
+    }
+
+    footer::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--neon-green), transparent);
+      box-shadow: 0 0 10px var(--neon-green);
+    }
+
+    .footer-logo {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 2rem;
+      color: var(--neon-green);
+      margin-bottom: 1.5rem;
+      text-shadow: var(--glow);
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .footer-links a {
+      color: rgba(192, 252, 204, 0.8);
+      text-decoration: none;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+
+    .footer-links a::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      width: 0;
+      height: 1px;
+      background: var(--neon-green);
+      transition: width 0.3s ease;
+    }
+
+    .footer-links a:hover {
+      color: var(--neon-green);
+    }
+
+    .footer-links a:hover::after {
+      width: 100%;
+    }
+
+    .social-links {
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .social-links a {
+      color: rgba(192, 252, 204, 0.8);
+      font-size: 1.5rem;
+      transition: all 0.3s ease;
+    }
+
+    .social-links a:hover {
+      color: var(--neon-green);
+      transform: translateY(-3px);
+      text-shadow: var(--glow);
+    }
+
+    .copyright {
+      color: rgba(192, 252, 204, 0.6);
+      font-size: 0.9rem;
+    }
+
+    /* === RESPONSIVE === */
+    @media (max-width: 768px) {
+      .header-content {
+        flex-direction: column;
+        gap: 1.5rem;
+      }
+
+      nav {
+        gap: 1rem;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+
+      .glitch-main {
+        font-size: 3rem;
+      }
+
+      .hero-subtitle {
+        font-size: 1.2rem;
+        padding: 0 1rem;
+      }
+
+      .section-title {
+        font-size: 2rem;
+      }
+
+      .countdown-timer {
+        flex-wrap: wrap;
+      }
+
+      .countdown-item {
+        min-width: 60px;
+      }
+
+      .countdown-number {
+        font-size: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="scanline"></div>
+  <div class="bg-pulse"></div>
+
+  <header>
+    <div class="container">
+      <div class="header-content">
+        <div class="logo" onclick="window.location.href='#'">
+          <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48c3R5bGU+LnN0MHtmaWxsOiMwMGZmODg7fTwvc3R5bGU+PHBhdGggY2xhc3M9InN0MCIgZD0iTTI1NiA1MTJjLTE0MS40IDAtMjU2LTExNC42LTI1Ni0yNTZTMTE0LjYgMCAyNTYgMHMyNTYgMTE0LjYgMjU2IDI1Ni0xMTQuNiAyNTYtMjU2IDI1NnptMC00NDhjLTEwNi4xIDAtMTkyIDg1LjktMTkyIDE5MnM4NS45IDE5MiAxOTIgMTkyIDE5Mi04NS45IDE5Mi0xOTItODUuOS0xOTItMTkyLTE5MnoiLz48cGF0aCBjbGFzcz0ic3QwIiBkPSJNMjU2IDM4NGMtNzAuNyAwLTEyOC01Ny4zLTEyOC0xMjhzNTcuMy0xMjggMTI4LTEyOCAxMjggNTcuMyAxMjggMTI4LTU3LjMgMTI4LTEyOCAxMjh6Ii8+PHBhdGggY2xhc3M9InN0MCIgZD0iTTI1NiAzMjBjLTM1LjMgMC02NC0yOC43LTY0LTY0czI4LjctNjQgNjQtNjQgNjQgMjguNyA2NCA2NC0yOC43IDY0LTY0IDY0eiIvPjwvc3ZnPg==" alt="Sudo Society Logo" class="logo-img">
+          <span class="logo-text">Sudo Society</span>
+        </div>
+        <nav>
+          <a href="#">Home</a>
+          <a href="#challenges">Challenges</a>
+          <a href="#leaderboard">Leaderboard</a>
+          <a href="#countdown">Event</a>
+          <a href="#">About</a>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="container">
+        <div class="hero-content">
+          <div class="glitch-container">
+            <h1 class="glitch-main">Sudo Society CTF</h1>
+            <div class="glitch-layer glitch-red">Sudo Society CTF</div>
+            <div class="glitch-layer glitch-blue">Sudo Society CTF</div>
+          </div>
+          <p class="hero-subtitle">Dive into the ultimate cybersecurity battleground. Test your skills against elite hackers worldwide.</p>
+          <button class="cta-button" id="registerBtn">REGISTER NOW</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="challenges" class="challenges">
+      <div class="container">
+        <h2 class="section-title">Challenge Categories</h2>
+        <div class="challenges-grid">
+          <div class="challenge-card">
+            <div class="challenge-icon">[WEB]</div>
+            <h3 class="challenge-title">Web Exploitation</h3>
+            <p class="challenge-desc">Test your skills against vulnerable web applications. Find and exploit vulnerabilities like XSS, SQLi, and CSRF.</p>
+            <div class="challenge-stats">
+              <span>25 Challenges</span>
+              <span>500+ Players</span>
+            </div>
+          </div>
+          <div class="challenge-card">
+            <div class="challenge-icon">[CRYPTO]</div>
+            <h3 class="challenge-title">Cryptography</h3>
+            <p class="challenge-desc">Break encryption schemes, crack hashes, and solve complex cipher challenges.</p>
+            <div class="challenge-stats">
+              <span>18 Challenges</span>
+              <span>400+ Players</span>
+            </div>
+          </div>
+          <div class="challenge-card">
+            <div class="challenge-icon">[PWN]</div>
+            <h3 class="challenge-title">Binary Exploitation</h3>
+            <p class="challenge-desc">Reverse engineer binaries, exploit buffer overflows, and perform memory corruption attacks.</p>
+            <div class="challenge-stats">
+              <span>22 Challenges</span>
+              <span>450+ Players</span>
+            </div>
+          </div>
+          <div class="challenge-card">
+            <div class="challenge-icon">[RE]</div>
+            <h3 class="challenge-title">Reverse Engineering</h3>
+            <p class="challenge-desc">Analyze and decompile binaries to understand their inner workings and find hidden flags.</p>
+            <div class="challenge-stats">
+              <span>15 Challenges</span>
+              <span>350+ Players</span>
+            </div>
+          </div>
+          <div class="challenge-card">
+            <div class="challenge-icon">[FORENSIC]</div>
+            <h3 class="challenge-title">Digital Forensics</h3>
+            <p class="challenge-desc">Analyze disk images, network traffic, and memory dumps to uncover hidden secrets.</p>
+            <div class="challenge-stats">
+              <span>12 Challenges</span>
+              <span>300+ Players</span>
+            </div>
+          </div>
+          <div class="challenge-card">
+            <div class="challenge-icon">[MISC]</div>
+            <h3 class="challenge-title">Miscellaneous</h3>
+            <p class="challenge-desc">Various challenges that don't fit into other categories, including steganography and programming.</p>
+            <div class="challenge-stats">
+              <span>20 Challenges</span>
+              <span>380+ Players</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="countdown" class="countdown">
+      <h3 class="countdown-title">EVENT STARTS IN</h3>
+      <div class="countdown-timer" id="countdownTimer">
+        <div class="countdown-item">
+          <div class="countdown-number" id="days">00</div>
+          <div class="countdown-label">Days</div>
+        </div>
+        <div class="countdown-item">
+          <div class="countdown-number" id="hours">00</div>
+          <div class="countdown-label">Hours</div>
+        </div>
+        <div class="countdown-item">
+          <div class="countdown-number" id="minutes">00</div>
+          <div class="countdown-label">Minutes</div>
+        </div>
+        <div class="countdown-item">
+          <div class="countdown-number" id="seconds">00</div>
+          <div class="countdown-label">Seconds</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="leaderboard" class="leaderboard">
+      <div class="container">
+        <h2 class="section-title">Leaderboard</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>Team</th>
+              <th>Points</th>
+              <th>Solved</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="rank">1</td>
+              <td>0xBADF00D</td>
+              <td>4250</td>
+              <td>32</td>
+            </tr>
+            <tr>
+              <td class="rank">2</td>
+              <td>Stack Smashers</td>
+              <td>3980</td>
+              <td>30</td>
+            </tr>
+            <tr>
+              <td class="rank">3</td>
+              <td>Shell Collectors</td>
+              <td>3750</td>
+              <td>28</td>
+            </tr>
+            <tr>
+              <td class="rank">4</td>
+              <td>Null Byte</td>
+              <td>3520</td>
+              <td>27</td>
+            </tr>
+            <tr>
+              <td class="rank">5</td>
+              <td>ROP Stars</td>
+              <td>3350</td>
+              <td>26</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      <div class="footer-logo">Sudo Society CTF</div>
+      <div class="footer-links">
+        <a href="#">Home</a>
+        <a href="#challenges">Challenges</a>
+        <a href="#leaderboard">Leaderboard</a>
+        <a href="#countdown">Event</a>
+        <a href="#">Rules</a>
+        <a href="#">Contact</a>
+      </div>
+      <div class="social-links">
+        <a href="#" aria-label="Twitter"><i>𝕏</i></a>
+        <a href="#" aria-label="Discord"><i>𝔻</i></a>
+        <a href="#" aria-label="GitHub"><i>Ⓖ</i></a>
+        <a href="#" aria-label="YouTube"><i>Ⓨ</i></a>
+      </div>
+      <p class="copyright">© 2023 Sudo Society. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script>
+    // Enhanced glitch effect
+    const glitchText = document.querySelector('.glitch-main');
+    
+    function randomGlitch() {
+      if (Math.random() > 0.7) {
+        glitchText.style.transform = `translate(${(Math.random() - 0.5) * 10}px, ${(Math.random() - 0.5) * 5}px)`;
+        glitchText.style.opacity = '0.8';
+        
+        setTimeout(() => {
+          glitchText.style.transform = 'translate(0, 0)';
+          glitchText.style.opacity = '1';
+        }, 100);
+      }
+    }
+    
+    setInterval(randomGlitch, 2000);
+    
+    // Button hover effect
+    const ctaButton = document.getElementById('registerBtn');
+    
+    ctaButton.addEventListener('mouseenter', () => {
+      ctaButton.style.boxShadow = '0 0 30px rgba(0, 255, 136, 0.8)';
+    });
+    
+    ctaButton.addEventListener('mouseleave', () => {
+      ctaButton.style.boxShadow = '0 0 20px rgba(0, 255, 136, 0.5)';
+    });
+    
+    ctaButton.addEventListener('click', () => {
+      ctaButton.textContent = 'ACCESS GRANTED';
+      ctaButton.style.background = 'linear-gradient(45deg, var(--neon-green), #00ff00)';
+      setTimeout(() => {
+        ctaButton.textContent = 'REGISTER NOW';
+        ctaButton.style.background = 'linear-gradient(45deg, var(--neon-green), var(--neon-blue))';
+      }, 2000);
+    });
+
+    // Countdown timer
+    function updateCountdown() {
+      const eventDate = new Date('2023-12-31T00:00:00').getTime();
+      const now = new Date().getTime();
+      const distance = eventDate - now;
+
+      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+      document.getElementById('days').textContent = days.toString().padStart(2, '0');
+      document.getElementById('hours').textContent = hours.toString().padStart(2, '0');
+      document.getElementById('minutes').textContent = minutes.toString().padStart(2, '0');
+      document.getElementById('seconds').textContent = seconds.toString().padStart(2, '0');
+
+      // Glitch effect when under 1 hour
+      if (distance < 3600000) {
+        const countdownItems = document.querySelectorAll('.countdown-number');
+        countdownItems.forEach(item => {
+          if (Math.random() > 0.7) {
+            item.style.color = `hsl(${Math.random() * 120}, 100%, 50%)`;
+            setTimeout(() => {
+              item.style.color = 'var(--neon-green)';
+            }, 100);
+          }
+        });
+      }
+    }
+
+    setInterval(updateCountdown, 1000);
+    updateCountdown();
+
+    // Smooth scrolling for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function(e) {
+        e.preventDefault();
+        document.querySelector(this.getAttribute('href')).scrollIntoView({
+          behavior: 'smooth'
+        });
+      });
+    });
+  </script>
+</body>
+</html>
