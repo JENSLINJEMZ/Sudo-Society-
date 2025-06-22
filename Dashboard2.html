@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Player Dashboard | Sudo Society CTF</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+  <style>
+    :root {
+      --neon-green: #00ff88;
+      --neon-pink: #ff00c8;
+      --neon-blue: #00ffff;
+      --neon-purple: #a100f6;
+      --dark-bg: #0a0a0a;
+      --darker-bg: #050505;
+      --card-bg: rgba(20, 20, 20, 0.7);
+      --glow: 0 0 15px rgba(0, 255, 136, 0.5);
+      --glow-blue: 0 0 15px rgba(0, 200, 255, 0.5);
+      --glow-pink: 0 0 15px rgba(255, 0, 200, 0.5);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Share Tech Mono', monospace;
+      background-color: var(--dark-bg);
+      color: #c0fccc;
+      overflow-x: hidden;
+      background-image: 
+        radial-gradient(circle at 20% 30%, rgba(0, 255, 136, 0.05) 0%, transparent 25%),
+        radial-gradient(circle at 80% 70%, rgba(0, 200, 255, 0.05) 0%, transparent 25%);
+    }
+
+    /* === CYBERPUNK SCANLINE === */
+    .scanline {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 1px;
+      background: linear-gradient(90deg, 
+        transparent, 
+        var(--neon-green),
+        var(--neon-blue),
+        var(--neon-pink),
+        transparent);
+      animation: scan 8s linear infinite;
+      z-index: 1000;
+      pointer-events: none;
+      opacity: 0.5;
+    }
+
+    @keyframes scan {
+      0% { top: -1px; }
+      100% { top: 100%; }
+    }
+
+    /* === GLITCH PULSE EFFECT === */
+    @keyframes glitch-pulse {
+      0% { text-shadow: var(--glow); }
+      25% { text-shadow: var(--glow-blue); }
+      50% { text-shadow: var(--glow-pink); }
+      75% { text-shadow: var(--glow-blue); }
+      100% { text-shadow: var(--glow); }
+    }
+
+    /* === MAIN LAYOUT === */
+    .dashboard-container {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      min-height: 100vh;
+    }
+
+    /* === SIDEBAR === */
+    .sidebar {
+      background: rgba(5, 5, 5, 0.9);
+      border-right: 1px solid rgba(0, 255, 136, 0.1);
+      padding: 2rem 1.5rem;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+    }
+
+    .player-card {
+      text-align: center;
+      margin-bottom: 2rem;
+      position: relative;
+    }
+
+    .player-card::after {
+      content: '';
+      position: absolute;
+      bottom: -1rem;
+      left: 0;
+      width: 100%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--neon-green), transparent);
+    }
+
+    .player-avatar {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      border: 3px solid var(--neon-green);
+      object-fit: cover;
+      margin: 0 auto 1rem;
+      box-shadow: var(--glow);
+      transition: all 0.3s ease;
+    }
+
+    .player-avatar:hover {
+      transform: rotate(5deg) scale(1.05);
+      box-shadow: 0 0 25px var(--neon-green);
+    }
+
+    .player-name {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.5rem;
+      color: var(--neon-green);
+      margin-bottom: 0.5rem;
+      animation: glitch-pulse 8s infinite;
+    }
+
+    .player-team {
+      display: inline-block;
+      background: rgba(0, 255, 136, 0.1);
+      border: 1px solid var(--neon-green);
+      border-radius: 20px;
+      padding: 0.3rem 1rem;
+      font-size: 0.8rem;
+      color: var(--neon-green);
+      margin-bottom: 1rem;
+    }
+
+    .player-rank {
+      font-size: 0.9rem;
+      color: rgba(192, 252, 204, 0.7);
+    }
+
+    .player-rank span {
+      color: var(--neon-green);
+      font-weight: bold;
+    }
+
+    /* === NAVIGATION === */
+    .nav-section {
+      margin: 2rem 0;
+    }
+
+    .nav-title {
+      font-family: 'Orbitron', sans-serif;
+      color: var(--neon-blue);
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .nav-menu {
+      list-style: none;
+    }
+
+    .nav-item {
+      margin-bottom: 0.5rem;
+    }
+
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      padding: 0.7rem;
+      color: rgba(192, 252, 204, 0.8);
+      text-decoration: none;
+      border-radius: 4px;
+      transition: all 0.3s ease;
+    }
+
+    .nav-link:hover {
+      background: rgba(0, 255, 136, 0.1);
+      color: var(--neon-green);
+      transform: translateX(5px);
+    }
+
+    .nav-link.active {
+      background: rgba(0, 255, 136, 0.2);
+      color: var(--neon-green);
+      font-weight: bold;
+      box-shadow: var(--glow);
+    }
+
+    /* === MAIN CONTENT === */
+    .main-content {
+      padding: 2rem;
+      background: var(--dark-bg);
+    }
+
+    .dashboard-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+    }
+
+    .dashboard-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 2rem;
+      color: var(--neon-green);
+      text-shadow: var(--glow);
+    }
+
+    .time-filter {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .filter-btn {
+      background: rgba(10, 10, 10, 0.5);
+      border: 1px solid rgba(0, 255, 136, 0.3);
+      border-radius: 20px;
+      padding: 0.5rem 1rem;
+      color: rgba(192, 252, 204, 0.8);
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .filter-btn.active {
+      background: rgba(0, 255, 136, 0.2);
+      color: var(--neon-green);
+      border-color: var(--neon-green);
+      box-shadow: var(--glow);
+    }
+
+    .filter-btn:hover {
+      border-color: var(--neon-green);
+    }
+
+    /* === SCORE CARDS === */
+    .score-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .score-card {
+      background: var(--card-bg);
+      border: 1px solid rgba(0, 255, 136, 0.2);
+      border-radius: 8px;
+      padding: 1.5rem;
+      backdrop-filter: blur(5px);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .score-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(0, 255, 136, 0.1), transparent);
+      transition: all 0.6s ease;
+    }
+
+    .score-card:hover::before {
+      left: 100%;
+    }
+
+    .score-card:hover {
+      transform: translateY(-5px);
+      border-color: var(--neon-green);
+      box-shadow: 0 10px 20px rgba(0, 255, 136, 0.2);
+    }
+
+    .score-card-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.9rem;
+      color: var(--neon-blue);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 0.5rem;
+    }
+
+    .score-card-value {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 2rem;
+      font-weight: 700;
+      color: white;
+      margin-bottom: 0.5rem;
+    }
+
+    .score-card-diff {
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      font-size: 0.8rem;
+    }
+
+    .score-card-diff.positive {
+      color: var(--neon-green);
+    }
+
+    .score-card-diff.negative {
+      color: var(--neon-pink);
+    }
+
+    /* === CHARTS SECTION === */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    @media (min-width: 1200px) {
+      .charts-grid {
+        grid-template-columns: 2fr 1fr;
+      }
+    }
+
+    .chart-container {
+      background: var(--card-bg);
+      border: 1px solid rgba(0, 255, 136, 0.2);
+      border-radius: 8px;
+      padding: 1.5rem;
+      backdrop-filter: blur(5px);
+    }
+
+    .chart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .chart-title {
+      font-family: 'Orbitron', sans-serif;
+      color: var(--neon-green);
+      font-size: 1.1rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .chart-legend {
+      display: flex;
+      gap: 1rem;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      font-size: 0.7rem;
+    }
+
+    .legend-color {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    /* === STREAK SECTION === */
+    .streak-section {
+      background: var(--card-bg);
+      border: 1px solid rgba(0, 255, 136, 0.2);
+      border-radius: 8px;
+      padding: 1.5rem;
+      backdrop-filter: blur(5px);
+      margin-bottom: 2rem;
+    }
+
+    .streak-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .streak-title {
+      font-family: 'Orbitron', sans-serif;
+      color: var(--neon-green);
+      font-size: 1.1rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .streak-count {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.5rem;
+      color: var(--neon-green);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .streak-count::after {
+      content: '🔥';
+      font-size: 1.2rem;
+    }
+
+    .streak-days {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .streak-day {
+      width: 30px;
+      height: 30px;
+      border-radius: 4px;
+      background: rgba(0, 255, 136, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      position: relative;
+    }
+
+    .streak-day.active {
+      background: var(--neon-green);
+      color: black;
+      font-weight: bold;
+      box-shadow: var(--glow);
+    }
+
+    .streak-day.today {
+      border: 2px solid var(--neon-green);
+    }
+
+    .streak-day.missed {
+      background: rgba(255, 0, 200, 0.1);
+    }
+
+    /* === TEAM SECTION === */
+    .team-section {
+      background: var(--card-bg);
+      border: 1px solid rgba(0, 255, 136, 0.2);
+      border-radius: 8px;
+      padding: 1.5rem;
+      backdrop-filter: blur(5px);
+      margin-bottom: 2rem;
+    }
+
+    .team-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .team-title {
+      font-family: 'Orbitron', sans-serif;
+      color: var(--neon-green);
+      font-size: 1.1rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .team-members {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 1rem;
+    }
+
+    .team-member {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      padding: 0.7rem;
+      background: rgba(10, 10, 10, 0.5);
+      border-radius: 4px;
+      transition: all 0.3s ease;
+    }
+
+    .team-member:hover {
+      background: rgba(0, 255, 136, 0.1);
+      transform: translateY(-3px);
+    }
+
+    .member-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 1px solid var(--neon-green);
+    }
+
+    .member-info {
+      flex: 1;
+    }
+
+    .member-name {
+      font-size: 0.9rem;
+      color: white;
+      margin-bottom: 0.2rem;
+    }
+
+    .member-points {
+      font-size: 0.7rem;
+      color: var(--neon-green);
+    }
+
+    /* === ACTIVITY FEED === */
+    .activity-section {
+      background: var(--card-bg);
+      border: 1px solid rgba(0, 255, 136, 0.2);
+      border-radius: 8px;
+      padding: 1.5rem;
+      backdrop-filter: blur(5px);
+    }
+
+    .activity-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .activity-title {
+      font-family: 'Orbitron', sans-serif;
+      color: var(--neon-green);
+      font-size: 1.1rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .activity-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .activity-item {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem;
+      background: rgba(10, 10, 10, 0.5);
+      border-radius: 6px;
+      border-left: 3px solid var(--neon-green);
+      transition: all 0.3s ease;
+    }
+
+    .activity-item:hover {
+      transform: translateX(5px);
+      background: rgba(0, 255, 136, 0.05);
+    }
+
+    .activity-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: rgba(0, 255, 136, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      color: var(--neon-green);
+    }
+
+    .activity-details {
+      flex: 1;
+    }
+
+    .activity-message {
+      font-size: 0.9rem;
+      margin-bottom: 0.3rem;
+    }
+
+    .activity-time {
+      font-size: 0.7rem;
+      color: rgba(192, 252, 204, 0.6);
+    }
+
+    .activity-points {
+      font-family: 'Orbitron', sans-serif;
+      color: var(--neon-green);
+      font-size: 0.9rem;
+      font-weight: bold;
+    }
+
+    /* === RESPONSIVE === */
+    @media (max-width: 1024px) {
+      .dashboard-container {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        height: auto;
+        position: static;
+        border-right: none;
+        border-bottom: 1px solid rgba(0, 255, 136, 0.1);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .score-cards {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .charts-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .score-cards {
+        grid-template-columns: 1fr;
+      }
+
+      .dashboard-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+      }
+
+      .time-filter {
+        width: 100%;
+        overflow-x: auto;
+        padding-bottom: 0.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="scanline"></div>
+
+  <div class="dashboard-container">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="player-card">
+        <img src="https://i.imgur.com/JqYeSzn.png" alt="Player Avatar" class="player-avatar">
+        <h2 class="player-name">CYPH3R</h2>
+        <div class="player-team">TEAM 0xBADF00D</div>
+        <div class="player-rank">Rank: <span>#42</span> (Top 5%)</div>
+      </div>
+
+      <div class="nav-section">
+        <h3 class="nav-title">🔓 Challenges</h3>
+        <ul class="nav-menu">
+          <li class="nav-item"><a href="#" class="nav-link active">📊 Dashboard</a></li>
+          <li class="nav-item"><a href="#" class="nav-link">💻 Web Exploitation</a></li>
+          <li class="nav-item"><a href="#" class="nav-link">🔐 Cryptography</a></li>
+          <li class="nav-item"><a href="#" class="nav-link">💥 Binary Pwn</a></li>
+          <li class="nav-item"><a href="#" class="nav-link">🔄 Reverse Engineering</a></li>
+        </ul>
+      </div>
+
+      <div class="nav-section">
+        <h3 class="nav-title">🏆 Achievements</h3>
+        <ul class="nav-menu">
+          <li class="nav-item"><a href="#" class="nav-link">⭐ Unlocked (12)</a></li>
+          <li class="nav-item"><a href="#" class="nav-link">🔒 Locked (28)</a></li>
+          <li class="nav-item"><a href="#" class="nav-link">🏅 Elite Challenges</a></li>
+        </ul>
+      </div>
+
+      <div class="nav-section">
+        <h3 class="nav-title">👥 Social</h3>
+        <ul class="nav-menu">
+          <li class="nav-item"><a href="#" class="nav-link">💬 Team Chat</a></li>
+          <li class="nav-item"><a href="#" class="nav-link">📈 Compare Stats</a></li>
+          <li class="nav-item"><a href="#" class="nav-link">👀 Spy Mode</a></li>
+        </ul>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+      <div class="dashboard-header">
+        <h1 class="dashboard-title">HACKER DASHBOARD</h1>
+        <div class="time-filter">
+          <button class="filter-btn active">24H</button>
+          <button class="filter-btn">7D</button>
+          <button class="filter-btn">30D</button>
+          <button class="filter-btn">ALL</button>
+        </div>
+      </div>
+
+      <!-- SCORE CARDS -->
+      <div class="score-cards">
+        <div class="score-card">
+          <div class="score-card-title">Total Score</div>
+          <div class="score-card-value">5,420</div>
+          <div class="score-card-diff positive">
+            ↑ +320 (6.3%)
+          </div>
+        </div>
+        <div class="score-card">
+          <div class="score-card-title">Daily Streak</div>
+          <div class="score-card-value">18</div>
+          <div class="score-card-diff positive">
+            ↑ +3 days
+          </div>
+        </div>
+        <div class="score-card">
+          <div class="score-card-title">Challenges</div>
+          <div class="score-card-value">87</div>
+          <div class="score-card-diff positive">
+            ↑ +5 solved
+          </div>
+        </div>
+        <div class="score-card">
+          <div class="score-card-title">Accuracy</div>
+          <div class="score-card-value">92%</div>
+          <div class="score-card-diff negative">
+            ↓ 2% from peak
+          </div>
+        </div>
+      </div>
+
+      <!-- CHARTS SECTION -->
+      <div class="charts-grid">
+        <div class="chart-container">
+          <div class="chart-header">
+            <h3 class="chart-title">Score Performance</h3>
+            <div class="chart-legend">
+              <div class="legend-item">
+                <div class="legend-color" style="background: var(--neon-green);"></div>
+                <span>Your Score</span>
+              </div>
+              <div class="legend-item">
+                <div class="legend-color" style="background: var(--neon-blue);"></div>
+                <span>Team Avg</span>
+              </div>
+              <div class="legend-item">
+                <div class="legend-color" style="background: var(--neon-pink);"></div>
+                <span>Top Player</span>
+              </div>
+            </div>
+          </div>
+          <canvas id="performanceChart"></canvas>
+        </div>
+
+        <div class="chart-container">
+          <div class="chart-header">
+            <h3 class="chart-title">Skill Distribution</h3>
+          </div>
+          <canvas id="radarChart"></canvas>
+        </div>
+      </div>
+
+      <!-- STREAK SECTION -->
+      <div class="streak-section">
+        <div class="streak-header">
+          <h3 class="streak-title">Current Streak</h3>
+          <div class="streak-count">18 days</div>
+        </div>
+        <p>Maintain your streak by solving at least 1 challenge daily. Current multiplier: <strong style="color: var(--neon-green);">x1.8</strong></p>
+        <div class="streak-days">
+          <div class="streak-day active">1</div>
+          <div class="streak-day active">2</div>
+          <div class="streak-day active">3</div>
+          <div class="streak-day active">4</div>
+          <div class="streak-day active">5</div>
+          <div class="streak-day active">6</div>
+          <div class="streak-day active">7</div>
+          <div class="streak-day active">8</div>
+          <div class="streak-day active">9</div>
+          <div class="streak-day active">10</div>
+          <div class="streak-day active">11</div>
+          <div class="streak-day active">12</div>
+          <div class="streak-day active">13</div>
+          <div class="streak-day active">14</div>
+          <div class="streak-day active">15</div>
+          <div class="streak-day active">16</div>
+          <div class="streak-day active">17</div>
+          <div class="streak-day today">18</div>
+          <div class="streak-day">19</div>
+          <div class="streak-day">20</div>
+          <div class="streak-day">21</div>
+          <div class="streak-day">22</div>
+          <div class="streak-day">23</div>
+          <div class="streak-day">24</div>
+          <div class="streak-day">25</div>
+          <div class="streak-day">26</div>
+          <div class="streak-day">27</div>
+          <div class="streak-day">28</div>
+          <div class="streak-day missed">29</div>
+          <div class="streak-day">30</div>
+        </div>
+      </div>
+
+      <!-- TEAM SECTION -->
+      <div class="team-section">
+        <div class="team-header">
+          <h3 class="team-title">Team 0xBADF00D</h3>
+          <div class="team-rank">Ranked #3 (↑2)</div>
+        </div>
+        <div class="team-members">
+          <div class="team-member">
+            <img src="https://i.imgur.com/JqYeSzn.png" alt="Member" class="member-avatar">
+            <div class="member-info">
+              <div class="member-name">CYPH3R</div>
+              <div class="member-points">5,420 pts</div>
+            </div>
+          </div>
+          <div class="team-member">
+            <img src="https://i.imgur.com/7RTmW0G.png" alt="Member" class="member-avatar">
+            <div class="member-info">
+              <div class="member-name">GHOST</div>
+              <div class="member-points">4,980 pts</div>
+            </div>
+          </div>
+          <div class="team-member">
+            <img src="https://i.imgur.com/3Q2ZJ9F.png" alt="Member" class="member-avatar">
+            <div class="member-info">
+              <div class="member-name">NINJA</div>
+              <div class="member-points">4,750 pts</div>
+            </div>
+          </div>
+          <div class="team-member">
+            <img src="https://i.imgur.com/5XZwz7y.png" alt="Member" class="member-avatar">
+            <div class="member-info">
+              <div class="member-name">ZERO</div>
+              <div class="member-points">4,320 pts</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ACTIVITY FEED -->
+      <div class="activity-section">
+        <div class="activity-header">
+          <h3 class="activity-title">Recent Activity</h3>
+          <a href="#" class="view-all">View All →</a>
+        </div>
+        <div class="activity-list">
+          <div class="activity-item">
+            <div class="activity-icon">💻</div>
+            <div class="activity-details">
+              <div class="activity-message">Solved "Advanced SQLi" challenge</div>
+              <div class="activity-time">2 hours ago</div>
+            </div>
+            <div class="activity-points">+120</div>
+          </div>
+          <div class="activity-item">
+            <div class="activity-icon">🏆</div>
+            <div class="activity-details">
+              <div class="activity-message">Achieved "Crypto Master" badge</div>
+              <div class="activity-time">5 hours ago</div>
+            </div>
+            <div class="activity-points">+50</div>
+          </div>
+          <div class="activity-item">
+            <div class="activity-icon">👥</div>
+            <div class="activity-details">
+              <div class="activity-message">Team moved to #3 on leaderboard</div>
+              <div class="activity-time">1 day ago</div>
+            </div>
+            <div class="activity-points">+30</div>
+          </div>
+          <div class="activity-item">
+            <div class="activity-icon">💥</div>
+            <div class="activity-details">
+              <div class="activity-message">First blood on "Buffer Overflow 3"</div>
+              <div class="activity-time">1 day ago</div>
+            </div>
+            <div class="activity-points">+75</div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // Initialize charts when DOM is loaded
+    document.addEventListener('DOMContentLoaded', function() {
+      // Performance Chart
+      const perfCtx = document.getElementById('performanceChart').getContext('2d');
+      const performanceChart = new Chart(perfCtx, {
+        type: 'line',
+        data: {
+          labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+          datasets: [
+            {
+              label: 'Your Score',
+              data: [1200, 1900, 2300, 2800, 3200, 3800, 4200, 4500, 4800, 5100, 5300, 5420],
+              borderColor: '#00ff88',
+              backgroundColor: 'rgba(0, 255, 136, 0.1)',
+              borderWidth: 2,
+              tension: 0.4,
+              fill: true
+            },
+            {
+              label: 'Team Avg',
+              data: [1000, 1500, 2000, 2400, 2900, 3300, 3700, 4000, 4300, 4600, 4900, 5100],
+              borderColor: '#00ffff',
+              backgroundColor: 'rgba(0, 200, 255, 0.1)',
+              borderWidth: 2,
+              tension: 0.4,
+              fill: true
+            },
+            {
+              label: 'Top Player',
+              data: [2000, 2800, 3500, 4200, 5000, 5800, 6500, 7100, 7600, 8000, 8300, 8500],
+              borderColor: '#ff00c8',
+              backgroundColor: 'rgba(255, 0, 200, 0.1)',
+              borderWidth: 2,
+              tension: 0.4,
+              fill: true
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              grid: {
+                color: 'rgba(192, 252, 204, 0.1)'
+              },
+              ticks: {
+                color: 'rgba(192, 252, 204, 0.7)'
+              }
+            },
+            x: {
+              grid: {
+                color: 'rgba(192, 252, 204, 0.1)'
+              },
+              ticks: {
+                color: 'rgba(192, 252, 204, 0.7)'
+              }
+            }
+          }
+        }
+      });
+
+      // Radar Chart
+      const radarCtx = document.getElementById('radarChart').getContext('2d');
+      const radarChart = new Chart(radarCtx, {
+        type: 'radar',
+        data: {
+          labels: ['Web', 'Crypto', 'Pwn', 'Reverse', 'Forensics', 'Misc'],
+          datasets: [{
+            label: 'Your Skills',
+            data: [85, 92, 78, 65, 70, 80],
+            backgroundColor: 'rgba(0, 255, 136, 0.2)',
+            borderColor: '#00ff88',
+            borderWidth: 2,
+            pointBackgroundColor: '#00ff88',
+            pointBorderColor: '#fff',
+            pointHoverRadius: 5
+          }, {
+            label: 'Top Players',
+            data: [95, 98, 90, 85, 88, 92],
+            backgroundColor: 'rgba(255, 0, 200, 0.2)',
+            borderColor: '#ff00c8',
+            borderWidth: 2,
+            pointBackgroundColor: '#ff00c8',
+            pointBorderColor: '#fff',
+            pointHoverRadius: 5
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false
+            }
+          },
+          scales: {
+            r: {
+              angleLines: {
+                color: 'rgba(192, 252, 204, 0.2)'
+              },
+              grid: {
+                color: 'rgba(192, 252, 204, 0.2)'
+              },
+              pointLabels: {
+                color: 'rgba(192, 252, 204, 0.8)'
+              },
+              ticks: {
+                display: false,
+                beginAtZero: true
+              }
+            }
+          }
+        }
+      });
+
+      // Filter buttons functionality
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          document.querySelector('.filter-btn.active').classList.remove('active');
+          this.classList.add('active');
+          
+          // In a real app, this would filter the data
+          console.log(`Filtering data for: ${this.textContent}`);
+        });
+      });
+    });
+  </script>
+</body>
+</html>
