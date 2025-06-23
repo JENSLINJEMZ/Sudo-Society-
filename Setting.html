@@ -929,6 +929,344 @@
       <p class="copyright">© 2023 Sudo Society. All rights reserved.</p>
     </div>
   </footer>
+            <div class="form-group">
+            <label for="newPassword">New Password</label>
+            <input type="password" id="newPassword" class="form-control" placeholder="Enter new password">
+            <p class="form-hint">Minimum 12 characters with uppercase, lowercase, number and special character.</p>
+          </div>
+
+          <div class="form-group">
+            <label for="confirmPassword">Confirm New Password</label>
+            <input type="password" id="confirmPassword" class="form-control" placeholder="Confirm new password">
+          </div>
+
+          <div class="form-group">
+            <label class="toggle-label">
+              <div class="toggle-switch">
+                <input type="checkbox" checked>
+                <span class="slider"></span>
+              </div>
+              Two-Factor Authentication (Enabled)
+            </label>
+            <p class="form-hint">Add an extra layer of security to your account with TOTP.</p>
+          </div>
+
+          <div class="form-group">
+            <label class="toggle-label">
+              <div class="toggle-switch">
+                <input type="checkbox">
+                <span class="slider"></span>
+              </div>
+              Backup Codes (Not Generated)
+            </label>
+            <p class="form-hint">Generate one-time use backup codes for 2FA recovery.</p>
+          </div>
+
+          <h3 class="section-title"><i>📱</i> Connected Devices</h3>
+          <div class="devices-list">
+            <div class="device-item">
+              <div class="device-icon">💻</div>
+              <div class="device-info">
+                <div class="device-name">MacBook Pro (Current Session)</div>
+                <div class="device-details">macOS 14.0 | Chrome 116 | 192.168.1.1</div>
+              </div>
+              <div class="device-actions">
+                <button class="device-btn logout">Logout</button>
+              </div>
+            </div>
+            <div class="device-item">
+              <div class="device-icon">📱</div>
+              <div class="device-info">
+                <div class="device-name">iPhone 14 Pro</div>
+                <div class="device-details">iOS 16.6 | Safari | Last active 3 days ago</div>
+              </div>
+              <div class="device-actions">
+                <button class="device-btn logout">Logout</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Privacy Section -->
+        <section id="privacy" class="form-section">
+          <h2 class="section-title"><i>👁️</i> Privacy Settings</h2>
+          
+          <div class="form-group">
+            <label class="toggle-label">
+              <div class="toggle-switch">
+                <input type="checkbox" checked>
+                <span class="slider"></span>
+              </div>
+              Show my profile on leaderboards
+            </label>
+          </div>
+
+          <div class="form-group">
+            <label class="toggle-label">
+              <div class="toggle-switch">
+                <input type="checkbox" checked>
+                <span class="slider"></span>
+              </div>
+              Allow direct messages from other members
+            </label>
+          </div>
+
+          <div class="form-group">
+            <label class="toggle-label">
+              <div class="toggle-switch">
+                <input type="checkbox">
+                <span class="slider"></span>
+              </div>
+              Show my email to other members
+            </label>
+          </div>
+
+          <div class="form-group">
+            <label class="toggle-label">
+              <div class="toggle-switch">
+                <input type="checkbox" checked>
+                <span class="slider"></span>
+              </div>
+              Show my country flag on profile
+            </label>
+          </div>
+
+          <div class="form-group">
+            <label for="activityVisibility">Activity Visibility</label>
+            <select id="activityVisibility" class="form-control">
+              <option value="public">Public (Everyone can see my activity)</option>
+              <option value="members">Members Only (Only logged-in users)</option>
+              <option value="private">Private (Only me)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="dataExport">Data Export</label>
+            <button type="button" class="btn-secondary">Request Data Export</button>
+            <p class="form-hint">Download all your personal data stored on our servers.</p>
+          </div>
+        </section>
+
+        <!-- Appearance Section -->
+        <section id="appearance" class="form-section">
+          <h2 class="section-title"><i>🎨</i> Appearance</h2>
+          
+          <div class="form-group">
+            <label for="theme">Theme</label>
+            <select id="theme" class="form-control">
+              <option value="dark">Dark (Default)</option>
+              <option value="light">Light</option>
+              <option value="system">System Preference</option>
+              <option value="oled">OLED Black</option>
+              <option value="hacker">Hacker Green</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="codeTheme">Code Editor Theme</label>
+            <select id="codeTheme" class="form-control">
+              <option value="monokai">Monokai</option>
+              <option value="dracula">Dracula</option>
+              <option value="solarized">Solarized Dark</option>
+              <option value="github">GitHub</option>
+              <option value="nord">Nord</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="toggle-label">
+              <div class="toggle-switch">
+                <input type="checkbox" checked>
+                <span class="slider"></span>
+              </div>
+              Enable animations and effects
+            </label>
+          </div>
+
+          <div class="form-group">
+            <label class="toggle-label">
+              <div class="toggle-switch">
+                <input type="checkbox">
+                <span class="slider"></span>
+              </div>
+              Reduce motion (accessibility mode)
+            </label>
+          </div>
+
+          <div class="form-group">
+            <label for="fontSize">Font Size</label>
+            <input type="range" id="fontSize" min="12" max="24" value="16" class="form-control">
+            <p class="form-hint">Adjust the interface font size (16px currently)</p>
+          </div>
+        </section>
+
+        <!-- Integrations Section -->
+        <section id="integrations" class="form-section">
+          <h2 class="section-title"><i>🔌</i> Integrations</h2>
+          
+          <div class="form-group">
+            <label class="toggle-label">
+              <div class="toggle-switch">
+                <input type="checkbox">
+                <span class="slider"></span>
+              </div>
+              GitHub Integration (Not Connected)
+            </label>
+            <p class="form-hint">Connect your GitHub account to sync repositories.</p>
+            <button type="button" class="btn-secondary">Connect GitHub</button>
+          </div>
+
+          <div class="form-group">
+            <label class="toggle-label">
+              <div class="toggle-switch">
+                <input type="checkbox" checked>
+                <span class="slider"></span>
+              </div>
+              Discord Integration (Connected)
+            </label>
+            <p class="form-hint">Connected as hacker1337#4242</p>
+            <button type="button" class="btn-secondary">Disconnect</button>
+          </div>
+
+          <div class="form-group">
+            <label for="webhooks">Webhook URLs</label>
+            <input type="text" id="webhooks" class="form-control" placeholder="https://your-webhook-url.example.com">
+            <p class="form-hint">Receive challenge notifications via webhooks.</p>
+          </div>
+
+          <div class="form-group">
+            <label for="apiKey">API Key</label>
+            <div style="display: flex; gap: 0.5rem;">
+              <input type="password" id="apiKey" class="form-control" value="sk_live_1234567890abcdef" readonly>
+              <button type="button" class="btn-secondary" style="white-space: nowrap;">Copy</button>
+              <button type="button" class="btn-secondary" style="white-space: nowrap;">Regenerate</button>
+            </div>
+            <p class="form-hint">Use this key to authenticate with our API. Keep it secret!</p>
+          </div>
+        </section>
+
+        <!-- Billing Section -->
+        <section id="billing" class="form-section">
+          <h2 class="section-title"><i>💳</i> Billing Information</h2>
+          
+          <div class="form-group">
+            <label>Subscription Status</label>
+            <div class="security-badge badge-strong">Premium Member (Active)</div>
+            <p class="form-hint">Next billing date: November 15, 2023</p>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="cardName">Name on Card</label>
+              <input type="text" id="cardName" class="form-control" placeholder="John Doe">
+            </div>
+            
+            <div class="form-group">
+              <label for="cardNumber">Card Number</label>
+              <input type="text" id="cardNumber" class="form-control" placeholder="•••• •••• •••• 4242">
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="cardExpiry">Expiration Date</label>
+              <input type="text" id="cardExpiry" class="form-control" placeholder="MM/YY">
+            </div>
+            
+            <div class="form-group">
+              <label for="cardCVC">Security Code</label>
+              <input type="text" id="cardCVC" class="form-control" placeholder="CVC">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <button type="button" class="btn-primary">Update Payment Method</button>
+            <button type="button" class="btn-secondary">View Billing History</button>
+          </div>
+        </section>
+
+        <!-- Danger Zone Section -->
+        <section id="danger" class="danger-zone">
+          <h2 class="section-title"><i>☢️</i> Danger Zone</h2>
+          <p style="margin-bottom: 1.5rem; color: rgba(255, 0, 200, 0.7);">These actions are irreversible. Proceed with caution.</p>
+          
+          <div class="form-group">
+            <button type="button" class="danger-btn">Deactivate Account</button>
+            <span style="color: rgba(255, 0, 200, 0.7); font-size: 0.9rem;">Temporarily disable your account</span>
+          </div>
+
+          <div class="form-group">
+            <button type="button" class="danger-btn">Delete All Data</button>
+            <span style="color: rgba(255, 0, 200, 0.7); font-size: 0.9rem;">Permanently erase all your data</span>
+          </div>
+
+          <div class="form-group">
+            <button type="button" class="danger-btn">Delete Account</button>
+            <span style="color: rgba(255, 0, 200, 0.7); font-size: 0.9rem;">Permanently delete your account</span>
+          </div>
+        </section>
+
+        <!-- Save Changes Button -->
+        <div class="btn-group">
+          <button type="button" class="btn-primary">Save Changes</button>
+          <button type="button" class="btn-secondary">Discard Changes</button>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <footer>
+    <div class="container">
+      <p class="copyright">© 2023 Sudo Society CTF. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple script to handle tab switching
+    document.querySelectorAll('.settings-menu a').forEach(link => {
+      link.addEventListener('click', function(e) {
+        e.preventDefault();
+        
+        // Remove active class from all links
+        document.querySelectorAll('.settings-menu a').forEach(item => {
+          item.classList.remove('active');
+        });
+        
+        // Add active class to clicked link
+        this.classList.add('active');
+        
+        // Hide all sections
+        document.querySelectorAll('.form-section, .danger-zone').forEach(section => {
+          section.style.display = 'none';
+        });
+        
+        // Show the selected section
+        const target = this.getAttribute('href').substring(1);
+        document.getElementById(target).style.display = 'block';
+      });
+    });
+
+    // Initialize by showing the profile section
+    document.addEventListener('DOMContentLoaded', function() {
+      document.getElementById('profile').style.display = 'block';
+    });
+
+    // Avatar upload preview functionality
+    const avatarPreview = document.getElementById('avatarPreview');
+    const uploadBtn = document.querySelector('.upload-btn');
+    const removeBtn = document.querySelector('.remove-btn');
+
+    uploadBtn.addEventListener('click', function() {
+      // In a real app, this would open a file dialog
+      alert('File upload dialog would open here in a real application');
+    });
+
+    removeBtn.addEventListener('click', function() {
+      avatarPreview.src = 'https://i.imgur.com/JqYeSzn.png';
+    });
+  </script>
+</body>
+</html>
 
   <script>
     // Avatar upload preview
