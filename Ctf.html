@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -130,6 +132,12 @@
       filter: grayscale(70%);
     }
 
+    .challenge-card.solved { /* New style for solved cards */
+        border: 2px solid var(--neon-blue); /* Different border color for solved */
+        box-shadow: 0 0 15px rgba(0, 255, 255, 0.5); /* Blue glow */
+        opacity: 0.7;
+    }
+
     .challenge-card h3 {
       color: var(--neon-green);
       margin-bottom: 0.5rem;
@@ -149,6 +157,23 @@
     .challenge-card .points {
       color: var(--neon-blue);
       font-weight: bold;
+    }
+
+    .challenge-card .solved-indicator { /* Style for SOLVED text on card */
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) rotate(-15deg);
+        background: rgba(0, 255, 255, 0.2);
+        padding: 0.5rem 1rem;
+        border-radius: 5px;
+        color: var(--neon-blue);
+        font-family: 'Orbitron', sans-serif;
+        font-size: 1.5rem;
+        font-weight: 900;
+        letter-spacing: 2px;
+        text-shadow: 0 0 10px var(--neon-blue);
+        pointer-events: none; /* Make sure it doesn't interfere with clicks */
     }
 
     /* === FILTER BUTTONS === */
@@ -207,6 +232,8 @@
       position: relative;
       transform: translateY(-20px);
       transition: transform 0.3s ease;
+      display: flex;
+      flex-direction: column;
     }
 
     .modal-overlay.visible .modal-content {
@@ -249,6 +276,7 @@
       display: flex;
       margin-top: 1.5rem;
       gap: 10px;
+      flex-shrink: 0;
     }
 
     .modal-flag-input input[type="text"] {
@@ -282,6 +310,52 @@
       background-color: #00e673;
       box-shadow: 0 0 10px var(--neon-green);
     }
+
+    /* === MESSAGE BOX STYLES (for both success and error) === */
+    .message-box {
+      margin-top: 1.5rem;
+      padding: 1.5rem;
+      border-radius: 8px;
+      text-align: center;
+      font-family: 'Orbitron', sans-serif;
+      display: none; /* Hidden by default */
+      animation: fadeIn 0.5s ease-out;
+    }
+
+    .message-box.visible {
+      display: block;
+    }
+
+    .message-box h3 {
+      font-size: 1.8rem;
+      margin-bottom: 0.8rem;
+    }
+
+    .message-box p {
+      font-size: 1rem;
+      margin-bottom: 0;
+    }
+
+    /* Specific styles for success message */
+    .message-box.success {
+      background-color: rgba(0, 255, 136, 0.15); /* Slightly darker green background */
+      border: 1px solid var(--neon-green);
+      color: var(--neon-green);
+      text-shadow: 0 0 8px rgba(0, 255, 136, 0.6);
+    }
+
+    /* Specific styles for error message */
+    .message-box.error {
+      background-color: rgba(255, 0, 200, 0.15); /* Slightly darker pink background */
+      border: 1px solid var(--neon-pink);
+      color: var(--neon-pink);
+      text-shadow: 0 0 8px rgba(255, 0, 200, 0.6);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
   </style>
 </head>
 <body>
@@ -299,6 +373,7 @@
         <button class="filter-btn" data-category="pwn">PWN</button>
         <button class="filter-btn" data-category="crypto">CRYPTO</button>
         <button class="filter-btn" data-category="reversing">REVERSING</button>
+        <button class="filter-btn" data-category="misc">MISC</button>
       </div>
     </div>
   </header>
@@ -318,9 +393,15 @@
         <p>Points: <span id="modalChallengePoints"></span></p>
         <p>Solves: <span id="modalChallengeSolves"></span></p>
       </div>
-      <div class="modal-flag-input">
+
+      <div class="modal-flag-input" id="flagInputSection">
         <input type="text" id="flagInput" placeholder="Enter your flag here...">
         <button id="submitFlagBtn">SUBMIT FLAG</button>
+      </div>
+
+      <div class="message-box" id="modalMessageBox">
+        <h3 id="messageBoxTitle"></h3>
+        <p id="messageBoxText"></p>
       </div>
     </div>
   </div>
@@ -335,7 +416,8 @@
         points: 100,
         solves: 42,
         description: "This challenge involves finding and manipulating cookies to gain access. Look for hidden values and consider how sessions are managed.",
-        flag: "SUDO{c00k1e_m0nst3r_eats_all}"
+        flag: "SUDO{c00k1e_m0nst3r_eats_all}",
+        solved: false
       },
       {
         id: 2,
@@ -344,7 +426,8 @@
         points: 250,
         solves: 15,
         description: "Exploit a classic buffer overflow vulnerability. Overwrite the return address to execute arbitrary code. Think about stack layouts and shellcode.",
-        flag: "SUDO{bUff3r_0v3rfl0w_r0cks!}"
+        flag: "SUDO{bUff3r_0v3rfl0w_r0cks!}",
+        solved: false
       },
       {
         id: 3,
@@ -353,7 +436,8 @@
         points: 150,
         solves: 28,
         description: "Decipher a message encrypted with RSA. You're given the public key and ciphertext. Is there a common vulnerability or a small prime factor?",
-        flag: "SUDO{cryp70_is_fun_w1th_rsa}"
+        flag: "SUDO{cryp70_is_fun_w1th_rsa}",
+        solved: false
       },
       {
         id: 4,
@@ -362,7 +446,8 @@
         points: 200,
         solves: 19,
         description: "Reverse engineer a small executable to find the correct password. Look for string comparisons or mathematical operations.",
-        flag: "SUDO{r3v3rs1ng_g3ts_y0u_th3_k3y}"
+        flag: "SUDO{r3v3rs1ng_g3ts_y0u_th3_k3y}",
+        solved: false
       },
       {
         id: 5,
@@ -371,7 +456,8 @@
         points: 120,
         solves: 35,
         description: "Find a Cross-Site Scripting (XSS) vulnerability and exfiltrate a cookie. Think about input sanitization and content security policies.",
-        flag: "SUDO{xss_pr0t3ct10n_n33d3d}"
+        flag: "SUDO{xss_pr0t3ct10n_n33d3d}",
+        solved: false
       },
       {
         id: 6,
@@ -380,7 +466,8 @@
         points: 180,
         solves: 22,
         description: "Bypass authentication using SQL injection. Explore common injection techniques like UNION-based or error-based attacks.",
-        flag: "SUDO{sql_1nj3ct10n_master}"
+        flag: "SUDO{sql_1nj3ct10n_master}",
+        solved: false
       },
       {
         id: 7,
@@ -389,16 +476,18 @@
         points: 300,
         solves: 10,
         description: "Exploit a format string vulnerability to leak stack data or write to arbitrary memory locations.",
-        flag: "SUDO{f0rm4t_str1ng_pwn3d}"
+        flag: "SUDO{f0rm4t_str1ng_pwn3d}",
+        solved: false
       },
       {
         id: 8,
         title: "Steganography Image",
-        category: "misc", // Added a new category for variety
+        category: "misc",
         points: 70,
         solves: 50,
         description: "There's a secret message hidden within this image. Can you find it?",
-        flag: "SUDO{h1dd3n_1n_pl41n_s1ght}"
+        flag: "SUDO{h1dd3n_1n_pl41n_s1ght}",
+        solved: false
       }
     ];
 
@@ -412,8 +501,13 @@
     const modalChallengePoints = document.getElementById('modalChallengePoints');
     const modalChallengeSolves = document.getElementById('modalChallengeSolves');
     const modalChallengeDescription = document.getElementById('modalChallengeDescription');
+    const flagInputSection = document.getElementById('flagInputSection');
     const flagInput = document.getElementById('flagInput');
     const submitFlagBtn = document.getElementById('submitFlagBtn');
+    const modalMessageBox = document.getElementById('modalMessageBox'); // Consolidated message box
+    const messageBoxTitle = document.getElementById('messageBoxTitle');
+    const messageBoxText = document.getElementById('messageBoxText');
+
 
     let activeChallengeId = null;
 
@@ -424,11 +518,15 @@
         const card = document.createElement('div');
         card.className = 'challenge-card';
         card.dataset.id = challenge.id;
+        if (challenge.solved) {
+          card.classList.add('solved');
+        }
         card.innerHTML = `
           <span class="category">${challenge.category.toUpperCase()}</span>
           <h3>${challenge.title}</h3>
           <div class="points">${challenge.points} POINTS</div>
           <div>${challenge.solves} SOLVES</div>
+          ${challenge.solved ? '<div class="solved-indicator">SOLVED</div>' : ''}
         `;
         challengesGrid.appendChild(card);
       });
@@ -457,16 +555,29 @@
       modalChallengeDescription.textContent = challenge.description;
       flagInput.value = ''; // Clear previous flag input
 
+      // Reset message box and show/hide sections based on solved status
+      modalMessageBox.classList.remove('visible', 'success', 'error');
+      if (challenge.solved) {
+        flagInputSection.style.display = 'none';
+        messageBoxTitle.textContent = "CONGRATULATIONS!";
+        messageBoxText.textContent = "You've successfully solved this challenge. Well done, hacker! 🎉";
+        modalMessageBox.classList.add('visible', 'success');
+      } else {
+        flagInputSection.style.display = 'flex';
+      }
+
       challengeModal.classList.add('visible');
     }
 
     // Hide Challenge Details Modal
     function hideChallengeDetails() {
       challengeModal.classList.remove('visible');
-      // Reset active card styles when modal is closed
       document.querySelectorAll('.challenge-card').forEach(card => {
         card.classList.remove('active', 'dimmed');
       });
+      // Ensure message box is hidden and input section is shown for next open
+      modalMessageBox.classList.remove('visible', 'success', 'error');
+      flagInputSection.style.display = 'flex';
     }
 
     // Initialize
@@ -479,7 +590,7 @@
         const challengeId = parseInt(card.dataset.id);
         const selectedChallenge = challenges.find(c => c.id === challengeId);
         if (selectedChallenge) {
-          setActiveChallenge(challengeId); // Highlight the clicked card
+          setActiveChallenge(challengeId);
           showChallengeDetails(selectedChallenge);
         }
       }
@@ -488,24 +599,48 @@
     // Event Listener for closing modal
     closeModalBtn.addEventListener('click', hideChallengeDetails);
     challengeModal.addEventListener('click', (e) => {
-      if (e.target === challengeModal) { // Close if clicked on overlay
+      if (e.target === challengeModal) {
         hideChallengeDetails();
       }
     });
 
-    // Flag Submission Logic (basic example)
+    // Flag Submission Logic
     submitFlagBtn.addEventListener('click', () => {
       const enteredFlag = flagInput.value.trim();
       const currentChallenge = challenges.find(c => c.id === activeChallengeId);
 
-      if (currentChallenge && enteredFlag === currentChallenge.flag) {
-        alert("Correct Flag! Congratulations!");
-        // Here you would typically update the challenge status (e.g., mark as solved)
-        // and potentially update the UI (e.g., increment solves count, change card style).
-        // For this example, we'll just close the modal.
-        hideChallengeDetails();
-      } else {
-        alert("Incorrect Flag. Try again!");
+      // Clear any previous messages
+      modalMessageBox.classList.remove('visible', 'success', 'error');
+
+      if (currentChallenge) {
+        if (enteredFlag === currentChallenge.flag) {
+          // Correct Flag!
+          currentChallenge.solved = true;
+          currentChallenge.solves++;
+          modalChallengeSolves.textContent = currentChallenge.solves;
+
+          flagInputSection.style.display = 'none';
+          messageBoxTitle.textContent = "CONGRATULATIONS!";
+          messageBoxText.textContent = "You've successfully solved this challenge. Well done, hacker! 🎉";
+          modalMessageBox.classList.add('visible', 'success');
+
+          // Re-render challenges to update the card status
+          const activeFilterBtn = document.querySelector('.filter-btn.active');
+          const currentCategory = activeFilterBtn ? activeFilterBtn.dataset.category : 'all';
+          if (currentCategory === 'all') {
+            renderChallenges(challenges);
+          } else {
+            renderChallenges(challenges.filter(c => c.category === currentCategory));
+          }
+          setActiveChallenge(activeChallengeId); // Re-apply active/dimmed state
+
+        }else {
+          // Incorrect Flag
+          flagInput.value = ''; // Clear input on incorrect attempt
+          messageBoxTitle.textContent = "FLAG INCORRECT!";
+          messageBoxText.textContent = "That's not quite right. Keep trying, you'll get it! 🧐";
+          modalMessageBox.classList.add('visible', 'error');
+        }
       }
     });
 
@@ -520,12 +655,11 @@
         } else {
           renderChallenges(challenges.filter(c => c.category === category));
         }
-        hideChallengeDetails(); // Close modal if open when filtering
-        // Ensure no card remains highlighted after filtering if the active one isn't in the new view
+        hideChallengeDetails();
         document.querySelectorAll('.challenge-card').forEach(card => {
           card.classList.remove('active', 'dimmed');
         });
-        activeChallengeId = null; // Reset active challenge ID
+        activeChallengeId = null;
       });
     });
   </script>
