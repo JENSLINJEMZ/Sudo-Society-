@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CTF Challenges | Sudo Society</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --neon-green: #00ff88;
+      --neon-pink: #ff00c8;
+      --neon-blue: #00ffff;
+      --dark-bg: #0a0a0a;
+      --darker-bg: #050505;
+      --card-bg: rgba(20, 20, 20, 0.7);
+      --glow: 0 0 15px rgba(0, 255, 136, 0.5);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Share Tech Mono', monospace;
+      background-color: var(--dark-bg);
+      color: #c0fccc;
+      overflow-x: hidden;
+    }
+
+    /* === SCANLINE EFFECT === */
+    .scanline {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(to bottom, transparent, var(--neon-green), transparent);
+      animation: scan 4s linear infinite;
+      z-index: 1000;
+      pointer-events: none;
+      opacity: 0.3;
+    }
+
+    @keyframes scan {
+      0% { top: -2px; }
+      100% { top: 100%; }
+    }
+
+    /* === HEADER === */
+    header {
+      padding: 1.5rem 0;
+      border-bottom: 1px solid rgba(0, 255, 136, 0.2);
+      background: rgba(10, 10, 10, 0.9);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 2rem;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      cursor: pointer;
+    }
+
+    .logo-img {
+      height: 50px;
+      filter: drop-shadow(0 0 8px var(--neon-green));
+    }
+
+    .logo-text {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 900;
+      font-size: 1.8rem;
+      color: var(--neon-green);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      text-shadow: var(--glow);
+    }
+
+    /* === CHALLENGES GRID === */
+    .challenges-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+      margin: 2rem 0;
+    }
+
+    .challenge-card {
+      background: var(--card-bg);
+      border: 1px solid rgba(0, 255, 136, 0.2);
+      border-radius: 8px;
+      padding: 1.5rem;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .challenge-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(0, 255, 136, 0.1), transparent);
+      transition: all 0.6s ease;
+    }
+
+    .challenge-card:hover::before {
+      left: 100%;
+    }
+
+    .challenge-card.active {
+      border: 2px solid var(--neon-green);
+      box-shadow: var(--glow);
+    }
+
+    .challenge-card.dimmed {
+      opacity: 0.3;
+      filter: grayscale(70%);
+    }
+
+    .challenge-card h3 {
+      color: var(--neon-green);
+      margin-bottom: 0.5rem;
+      font-family: 'Orbitron', sans-serif;
+    }
+
+    .challenge-card .category {
+      display: inline-block;
+      padding: 0.25rem 0.5rem;
+      background: rgba(0, 255, 136, 0.1);
+      color: var(--neon-green);
+      border-radius: 4px;
+      font-size: 0.8rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .challenge-card .points {
+      color: var(--neon-blue);
+      font-weight: bold;
+    }
+
+    /* === FILTER BUTTONS === */
+    .filter-buttons {
+      display: flex;
+      gap: 10px;
+      margin: 1rem 0;
+      flex-wrap: wrap;
+    }
+
+    .filter-btn {
+      padding: 0.5rem 1rem;
+      background: rgba(0, 255, 136, 0.1);
+      border: 1px solid rgba(0, 255, 136, 0.3);
+      color: var(--neon-green);
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .filter-btn.active, .filter-btn:hover {
+      background: rgba(0, 255, 136, 0.3);
+      box-shadow: var(--glow);
+    }
+
+    /* === MODAL STYLES === */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+
+    .modal-overlay.visible {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal-content {
+      background: var(--darker-bg);
+      border: 2px solid var(--neon-green);
+      border-radius: 10px;
+      padding: 2rem;
+      width: 90%;
+      max-width: 600px;
+      box-shadow: var(--glow);
+      position: relative;
+      transform: translateY(-20px);
+      transition: transform 0.3s ease;
+    }
+
+    .modal-overlay.visible .modal-content {
+      transform: translateY(0);
+    }
+
+    .modal-content h2 {
+      color: var(--neon-green);
+      font-family: 'Orbitron', sans-serif;
+      margin-bottom: 1rem;
+    }
+
+    .modal-content p {
+      margin-bottom: 0.8rem;
+      line-height: 1.5;
+    }
+
+    .modal-content .modal-info span {
+      font-weight: bold;
+      color: var(--neon-blue);
+    }
+
+    .modal-content .close-btn {
+      position: absolute;
+      top: 15px;
+      right: 20px;
+      background: none;
+      border: none;
+      color: var(--neon-pink);
+      font-size: 1.8rem;
+      cursor: pointer;
+      transition: color 0.2s ease;
+    }
+
+    .modal-content .close-btn:hover {
+      color: #ff4dff;
+    }
+
+    .modal-flag-input {
+      display: flex;
+      margin-top: 1.5rem;
+      gap: 10px;
+    }
+
+    .modal-flag-input input[type="text"] {
+      flex-grow: 1;
+      padding: 0.7rem;
+      border: 1px solid var(--neon-blue);
+      background-color: rgba(0, 0, 0, 0.5);
+      color: var(--neon-green);
+      border-radius: 5px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 1rem;
+    }
+
+    .modal-flag-input input[type="text"]::placeholder {
+      color: rgba(0, 255, 255, 0.5);
+    }
+
+    .modal-flag-input button {
+      padding: 0.7rem 1.2rem;
+      background-color: var(--neon-green);
+      color: var(--darker-bg);
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      transition: background-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .modal-flag-input button:hover {
+      background-color: #00e673;
+      box-shadow: 0 0 10px var(--neon-green);
+    }
+  </style>
+</head>
+<body>
+  <div class="scanline"></div>
+
+  <header>
+    <div class="container">
+      <div class="logo">
+        <img src="assets/logo.svg" alt="Sudo Society" class="logo-img">
+        <span class="logo-text">CTF Challenges</span>
+      </div>
+      <div class="filter-buttons">
+        <button class="filter-btn active" data-category="all">ALL</button>
+        <button class="filter-btn" data-category="web">WEB</button>
+        <button class="filter-btn" data-category="pwn">PWN</button>
+        <button class="filter-btn" data-category="crypto">CRYPTO</button>
+        <button class="filter-btn" data-category="reversing">REVERSING</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="challenges-grid" id="challengesGrid">
+      </div>
+  </main>
+
+  <div class="modal-overlay" id="challengeModal">
+    <div class="modal-content">
+      <button class="close-btn" id="closeModal">&times;</button>
+      <h2 id="modalChallengeTitle"></h2>
+      <p id="modalChallengeDescription"></p>
+      <div class="modal-info">
+        <p>Category: <span id="modalChallengeCategory"></span></p>
+        <p>Points: <span id="modalChallengePoints"></span></p>
+        <p>Solves: <span id="modalChallengeSolves"></span></p>
+      </div>
+      <div class="modal-flag-input">
+        <input type="text" id="flagInput" placeholder="Enter your flag here...">
+        <button id="submitFlagBtn">SUBMIT FLAG</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Sample CTF Challenges
+    const challenges = [
+      {
+        id: 1,
+        title: "Cookie Monster",
+        category: "web",
+        points: 100,
+        solves: 42,
+        description: "This challenge involves finding and manipulating cookies to gain access. Look for hidden values and consider how sessions are managed.",
+        flag: "SUDO{c00k1e_m0nst3r_eats_all}"
+      },
+      {
+        id: 2,
+        title: "Buffer Overflow",
+        category: "pwn",
+        points: 250,
+        solves: 15,
+        description: "Exploit a classic buffer overflow vulnerability. Overwrite the return address to execute arbitrary code. Think about stack layouts and shellcode.",
+        flag: "SUDO{bUff3r_0v3rfl0w_r0cks!}"
+      },
+      {
+        id: 3,
+        title: "RSA Madness",
+        category: "crypto",
+        points: 150,
+        solves: 28,
+        description: "Decipher a message encrypted with RSA. You're given the public key and ciphertext. Is there a common vulnerability or a small prime factor?",
+        flag: "SUDO{cryp70_is_fun_w1th_rsa}"
+      },
+      {
+        id: 4,
+        title: "Secret Lockbox",
+        category: "reversing",
+        points: 200,
+        solves: 19,
+        description: "Reverse engineer a small executable to find the correct password. Look for string comparisons or mathematical operations.",
+        flag: "SUDO{r3v3rs1ng_g3ts_y0u_th3_k3y}"
+      },
+      {
+        id: 5,
+        title: "XSS Hunter",
+        category: "web",
+        points: 120,
+        solves: 35,
+        description: "Find a Cross-Site Scripting (XSS) vulnerability and exfiltrate a cookie. Think about input sanitization and content security policies.",
+        flag: "SUDO{xss_pr0t3ct10n_n33d3d}"
+      },
+      {
+        id: 6,
+        title: "SQL Injection",
+        category: "web",
+        points: 180,
+        solves: 22,
+        description: "Bypass authentication using SQL injection. Explore common injection techniques like UNION-based or error-based attacks.",
+        flag: "SUDO{sql_1nj3ct10n_master}"
+      },
+      {
+        id: 7,
+        title: "Format String Bug",
+        category: "pwn",
+        points: 300,
+        solves: 10,
+        description: "Exploit a format string vulnerability to leak stack data or write to arbitrary memory locations.",
+        flag: "SUDO{f0rm4t_str1ng_pwn3d}"
+      },
+      {
+        id: 8,
+        title: "Steganography Image",
+        category: "misc", // Added a new category for variety
+        points: 70,
+        solves: 50,
+        description: "There's a secret message hidden within this image. Can you find it?",
+        flag: "SUDO{h1dd3n_1n_pl41n_s1ght}"
+      }
+    ];
+
+    // DOM Elements
+    const challengesGrid = document.getElementById('challengesGrid');
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    const challengeModal = document.getElementById('challengeModal');
+    const closeModalBtn = document.getElementById('closeModal');
+    const modalChallengeTitle = document.getElementById('modalChallengeTitle');
+    const modalChallengeCategory = document.getElementById('modalChallengeCategory');
+    const modalChallengePoints = document.getElementById('modalChallengePoints');
+    const modalChallengeSolves = document.getElementById('modalChallengeSolves');
+    const modalChallengeDescription = document.getElementById('modalChallengeDescription');
+    const flagInput = document.getElementById('flagInput');
+    const submitFlagBtn = document.getElementById('submitFlagBtn');
+
+    let activeChallengeId = null;
+
+    // Render Challenges
+    function renderChallenges(challengesToRender) {
+      challengesGrid.innerHTML = '';
+      challengesToRender.forEach(challenge => {
+        const card = document.createElement('div');
+        card.className = 'challenge-card';
+        card.dataset.id = challenge.id;
+        card.innerHTML = `
+          <span class="category">${challenge.category.toUpperCase()}</span>
+          <h3>${challenge.title}</h3>
+          <div class="points">${challenge.points} POINTS</div>
+          <div>${challenge.solves} SOLVES</div>
+        `;
+        challengesGrid.appendChild(card);
+      });
+    }
+
+    // Set active challenge (for highlighting)
+    function setActiveChallenge(id) {
+      activeChallengeId = id;
+      document.querySelectorAll('.challenge-card').forEach(card => {
+        if (parseInt(card.dataset.id) === id) {
+          card.classList.add('active');
+          card.classList.remove('dimmed');
+        } else {
+          card.classList.remove('active');
+          card.classList.add('dimmed');
+        }
+      });
+    }
+
+    // Show Challenge Details Modal
+    function showChallengeDetails(challenge) {
+      modalChallengeTitle.textContent = challenge.title;
+      modalChallengeCategory.textContent = challenge.category.toUpperCase();
+      modalChallengePoints.textContent = challenge.points;
+      modalChallengeSolves.textContent = challenge.solves;
+      modalChallengeDescription.textContent = challenge.description;
+      flagInput.value = ''; // Clear previous flag input
+
+      challengeModal.classList.add('visible');
+    }
+
+    // Hide Challenge Details Modal
+    function hideChallengeDetails() {
+      challengeModal.classList.remove('visible');
+      // Reset active card styles when modal is closed
+      document.querySelectorAll('.challenge-card').forEach(card => {
+        card.classList.remove('active', 'dimmed');
+      });
+    }
+
+    // Initialize
+    renderChallenges(challenges);
+
+    // Event Listener for Challenge Card Clicks (to open modal)
+    challengesGrid.addEventListener('click', (e) => {
+      const card = e.target.closest('.challenge-card');
+      if (card) {
+        const challengeId = parseInt(card.dataset.id);
+        const selectedChallenge = challenges.find(c => c.id === challengeId);
+        if (selectedChallenge) {
+          setActiveChallenge(challengeId); // Highlight the clicked card
+          showChallengeDetails(selectedChallenge);
+        }
+      }
+    });
+
+    // Event Listener for closing modal
+    closeModalBtn.addEventListener('click', hideChallengeDetails);
+    challengeModal.addEventListener('click', (e) => {
+      if (e.target === challengeModal) { // Close if clicked on overlay
+        hideChallengeDetails();
+      }
+    });
+
+    // Flag Submission Logic (basic example)
+    submitFlagBtn.addEventListener('click', () => {
+      const enteredFlag = flagInput.value.trim();
+      const currentChallenge = challenges.find(c => c.id === activeChallengeId);
+
+      if (currentChallenge && enteredFlag === currentChallenge.flag) {
+        alert("Correct Flag! Congratulations!");
+        // Here you would typically update the challenge status (e.g., mark as solved)
+        // and potentially update the UI (e.g., increment solves count, change card style).
+        // For this example, we'll just close the modal.
+        hideChallengeDetails();
+      } else {
+        alert("Incorrect Flag. Try again!");
+      }
+    });
+
+    // Filter functionality
+    filterButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        filterButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const category = btn.dataset.category;
+        if (category === 'all') {
+          renderChallenges(challenges);
+        } else {
+          renderChallenges(challenges.filter(c => c.category === category));
+        }
+        hideChallengeDetails(); // Close modal if open when filtering
+        // Ensure no card remains highlighted after filtering if the active one isn't in the new view
+        document.querySelectorAll('.challenge-card').forEach(card => {
+          card.classList.remove('active', 'dimmed');
+        });
+        activeChallengeId = null; // Reset active challenge ID
+      });
+    });
+  </script>
+</body>
+</html>
